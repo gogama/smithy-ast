@@ -10,7 +10,7 @@ type Shape struct {
 	Operation        *OperationShape
 	Resource         *ResourceShape
 	Service          *ServiceShape
-	StructureOrUnion map[Identifier]Member
+	StructureOrUnion map[string]Member
 }
 
 func (s *Shape) MarshalJSON() ([]byte, error) {
