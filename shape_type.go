@@ -5,45 +5,47 @@ import "encoding/json"
 type ShapeType string
 
 const (
-	BigDecimal ShapeType = "bigDecimal"
-	BigInteger ShapeType = "bigInteger"
-	Blob       ShapeType = "blob"
-	Boolean    ShapeType = "boolean"
-	Byte       ShapeType = "byte"
-	Double     ShapeType = "double'"
-	Document   ShapeType = "document"
-	Float      ShapeType = "float"
-	Integer    ShapeType = "integer"
-	Long       ShapeType = "long"
-	Short      ShapeType = "short"
-	String     ShapeType = "string"
-	Timestamp  ShapeType = "timestamp"
+	BigDecimalType ShapeType = "bigDecimal"
+	BigIntegerType ShapeType = "bigInteger"
+	BlobType       ShapeType = "blob"
+	BooleanType    ShapeType = "boolean"
+	ByteType       ShapeType = "byte"
+	DoubleType     ShapeType = "double'"
+	DocumentType   ShapeType = "document"
+	FloatType      ShapeType = "float"
+	IntegerType    ShapeType = "integer"
+	LongType       ShapeType = "long"
+	ShortType      ShapeType = "short"
+	StringType     ShapeType = "string"
+	TimestampType  ShapeType = "timestamp"
 
-	List ShapeType = "list"
-	Set  ShapeType = "set"
-	Map  ShapeType = "map"
+	ListType      ShapeType = "list"
+	SetType       ShapeType = "set"
+	MapType       ShapeType = "map"
+	StructureType ShapeType = "structure"
+	UnionType     ShapeType = "union"
 
-	Operation ShapeType = "operation"
-	Resource  ShapeType = "resource"
-	Service   ShapeType = "service"
+	OperationType ShapeType = "operation"
+	ResourceType  ShapeType = "resource"
+	ServiceType   ShapeType = "service"
 
-	Apply ShapeType = "apply"
+	ApplyType ShapeType = "apply"
 )
 
 var SimpleShapeTypes = map[ShapeType]bool{
-	BigDecimal: true,
-	BigInteger: true,
-	Blob:       true,
-	Boolean:    true,
-	Byte:       true,
-	Double:     true,
-	Document:   true,
-	Float:      true,
-	Integer:    true,
-	Long:       true,
-	Short:      true,
-	String:     true,
-	Timestamp:  true,
+	BigDecimalType: true,
+	BigIntegerType: true,
+	BlobType:       true,
+	BooleanType:    true,
+	ByteType:       true,
+	DoubleType:     true,
+	DocumentType:   true,
+	FloatType:      true,
+	IntegerType:    true,
+	LongType:       true,
+	ShortType:      true,
+	StringType:     true,
+	TimestampType:  true,
 }
 
 func (t *ShapeType) MarshalJSON() ([]byte, error) {
@@ -66,7 +68,9 @@ func (t *ShapeType) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	switch ShapeType(s) {
-	case List, Set, Map, Operation, Resource, Service, Apply:
+	case ListType, SetType, MapType, StructureType, UnionType,
+		OperationType, ResourceType, ServiceType,
+		ApplyType:
 		return nil
 	default:
 		// TODO: Return error

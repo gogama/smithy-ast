@@ -1,8 +1,9 @@
 package smithy_ast
 
 type Shape struct {
+	node
 	Type             ShapeType
-	Traits           map[AbsShapeID]interface{}
+	Traits           Traits
 	ListOrSet        *Member
 	MapKey           *Member
 	MapValue         *Member

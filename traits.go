@@ -95,7 +95,7 @@ func (t *Traits) UnmarshalJSON(data []byte) error {
 	var delim json.Delim
 	var ok bool
 	if delim, ok = tok.(json.Delim); !ok || delim != '{' {
-		// TODO: return error
+		return newError("expected { to start traits map")
 	}
 
 	// Initialize the destination.
@@ -107,7 +107,7 @@ func (t *Traits) UnmarshalJSON(data []byte) error {
 		tok, err = dec.Token()
 		var key string
 		if key, ok = tok.(string); !ok {
-			// TODO: return error.
+			return newError("expected trait shape ID (key) within traits map")
 		}
 
 		// Determine the type of the value to decode.
@@ -120,7 +120,7 @@ func (t *Traits) UnmarshalJSON(data []byte) error {
 		// Decode the value.
 		err = dec.Decode(&val)
 		if err != nil {
-			// TODO: return error.
+			return &wrapError{"can't decode trait " + key, err}
 		}
 		(*t)[AbsShapeID(key)] = val
 	}
@@ -128,7 +128,7 @@ func (t *Traits) UnmarshalJSON(data []byte) error {
 	// Expect a closing brace ending the JSON object.
 	tok, err = dec.Token()
 	if delim, ok = tok.(json.Delim); !ok || delim != '}' {
-		// TODO: return error
+		return newError("expected } to end traits map")
 	}
 
 	// Traits parsed successfully.
@@ -194,17 +194,18 @@ func (e *ErrorTrait) UnmarshalJSON(data []byte) error {
 	// Get a decoder on the data.
 	dec := json.NewDecoder(bytes.NewReader(data))
 
-	tok, err := dec.Token()
+	tok, _ := dec.Token()
 	var s string
 	var ok bool
 	if s, ok = tok.(string); !ok {
-		// TODO: return error
+		return newError("expected string value for trait " + string(ErrorTraitID))
 	}
 
 	switch s {
 	case "client", "server":
 		return nil
-	default: // TODO: return error
+	default:
+		return newErrorf("expected value for trait %s to be %q or %q (it is %q)", ErrorTraitID, "client", "server", s)
 	}
 }
 
