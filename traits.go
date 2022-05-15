@@ -85,53 +85,31 @@ const (
 type Traits map[AbsShapeID]interface{}
 
 func (t *Traits) UnmarshalJSON(data []byte) error {
-	// Get a decoder on the data.
 	dec := json.NewDecoder(bytes.NewReader(data))
-	var tok json.Token
-	var err error
+	return t.decode(dec)
+}
 
-	// Expect an open brace starting a JSON object.
-	tok, err = dec.Token()
-	var delim json.Delim
-	var ok bool
-	if delim, ok = tok.(json.Delim); !ok || delim != '{' {
-		return newError("expected { to start traits map")
-	}
-
-	// Initialize the destination.
-	*t = make(Traits)
-
-	// Find all key, value pairs in the object.
-	for dec.More() {
-		// Get the key.
-		tok, err = dec.Token()
-		var key string
-		if key, ok = tok.(string); !ok {
-			return newError("expected trait shape ID (key) within traits map")
-		}
-
+func (t *Traits) decode(dec *json.Decoder) error {
+	t2 := make(Traits)
+	err := decodeObject(dec, "traits map", func(dec2 *json.Decoder, key string, keyOffset int64) error {
 		// Determine the type of the value to decode.
 		var val interface{}
-		var tp reflect.Type
-		if tp, ok = builtinTraits[AbsShapeID(key)]; ok {
+		if tp, ok := builtinTraits[AbsShapeID(key)]; ok {
 			val = reflect.New(tp)
 		}
 
 		// Decode the value.
-		err = dec.Decode(&val)
-		if err != nil {
-			return &wrapError{"can't decode trait " + key, err}
+		err2 := dec.Decode(&val)
+		if err2 != nil {
+			return err2
 		}
-		(*t)[AbsShapeID(key)] = val
+		t2[AbsShapeID(key)] = val
+		return nil
+	})
+	if err != nil {
+		return err
 	}
-
-	// Expect a closing brace ending the JSON object.
-	tok, err = dec.Token()
-	if delim, ok = tok.(json.Delim); !ok || delim != '}' {
-		return newError("expected } to end traits map")
-	}
-
-	// Traits parsed successfully.
+	*t = t2
 	return nil
 }
 

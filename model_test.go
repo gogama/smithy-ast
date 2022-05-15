@@ -66,7 +66,7 @@ func TestModel(t *testing.T) {
 				err := WriteModel(testCase.model, &w)
 
 				assert.NoError(t, err)
-				assert.Equal(t, testCase.json, w.String())
+				assert.Equal(t, testCase.json, strings.TrimRight(w.String(), "\n"))
 			})
 		})
 	}

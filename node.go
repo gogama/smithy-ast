@@ -51,14 +51,16 @@ type StringNode struct {
 }
 
 func (n *StringNode) Decode(dec *json.Decoder) error {
+	offset := dec.InputOffset()
 	t, err := dec.Token()
 	if err != nil {
 		return err
 	}
 	if s, ok := t.(string); ok {
 		n.Value = s
+		return nil
 	}
-	return modelError("expected string", dec.InputOffset())
+	return modelError("expected string", offset)
 }
 
 func (n *StringNode) MarshalJSON() ([]byte, error) {

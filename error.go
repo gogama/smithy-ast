@@ -3,6 +3,7 @@ package smithy_ast
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // ModelError describes a Smithy AST model structure error.
@@ -16,6 +17,10 @@ func modelError(msg string, offset int64) error {
 }
 
 func (err *ModelError) Error() string { return err.msg }
+
+func unsupportedKeyError(name, key string, offset int64) error {
+	return modelError("unsupported key "+strconv.Quote(key)+" in "+name, offset)
+}
 
 func newError(text string) error {
 	return errors.New(prefix + text)

@@ -1,7 +1,5 @@
 package smithy_ast
 
-import "encoding/json"
-
 type ShapeType string
 
 const (
@@ -25,9 +23,9 @@ const (
 	StructureType ShapeType = "structure"
 	UnionType     ShapeType = "union"
 
-	OperationType ShapeType = "operation"
-	ResourceType  ShapeType = "resource"
 	ServiceType   ShapeType = "service"
+	ResourceType  ShapeType = "resource"
+	OperationType ShapeType = "operation"
 
 	ApplyType ShapeType = "apply"
 )
@@ -48,31 +46,27 @@ var SimpleShapeTypes = map[ShapeType]bool{
 	TimestampType:  true,
 }
 
-func (t *ShapeType) MarshalJSON() ([]byte, error) {
-	data := make([]byte, len(*t)+2)
-	data[0] = '"'
-	for i := range *t {
-		data[i+1] = (*t)[i]
-	}
-	data[len(*t)] = '"'
-}
-
-func (t *ShapeType) UnmarshalJSON(data []byte) error {
-	var s string
-	err := json.Unmarshal(data, &s)
-	if err != nil {
-		return err // TODO: Do better here, create own wording.
-	}
-	if SimpleShapeTypes[ShapeType(s)] {
-		*t = ShapeType(s)
-		return nil
-	}
-	switch ShapeType(s) {
-	case ListType, SetType, MapType, StructureType, UnionType,
-		OperationType, ResourceType, ServiceType,
-		ApplyType:
-		return nil
-	default:
-		// TODO: Return error
-	}
+var ShapeTypes = map[ShapeType]bool{
+	BigDecimalType: true,
+	BigIntegerType: true,
+	BlobType:       true,
+	BooleanType:    true,
+	ByteType:       true,
+	DoubleType:     true,
+	DocumentType:   true,
+	FloatType:      true,
+	IntegerType:    true,
+	LongType:       true,
+	ShortType:      true,
+	StringType:     true,
+	TimestampType:  true,
+	ListType:       true,
+	SetType:        true,
+	MapType:        true,
+	StructureType:  true,
+	UnionType:      true,
+	ServiceType:    true,
+	ResourceType:   true,
+	OperationType:  true,
+	ApplyType:      true,
 }
