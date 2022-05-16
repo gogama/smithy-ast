@@ -1,4 +1,4 @@
-package smithy_ast
+package ast
 
 import (
 	"errors"
