@@ -30,17 +30,4 @@ func newErrorf(format string, a ...interface{}) error {
 	return fmt.Errorf(prefix+format, a...)
 }
 
-type wrapError struct {
-	text  string
-	cause error
-}
-
-func (err *wrapError) Error() string {
-	return prefix + err.text + " [" + err.cause.Error() + "]"
-}
-
-func (err *wrapError) Unwrap() error {
-	return err.cause
-}
-
 const prefix = "smithy_ast: "
