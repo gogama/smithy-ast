@@ -37,11 +37,11 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 			}
 			if s2, ok := tok.(string); ok {
 				if !ShapeTypes[ShapeType(s2)] {
-					return modelError("unrecognized shape type: "+strconv.Quote(s2), offset)
+					return jsonError("unrecognized shape type: "+strconv.Quote(s2), offset)
 				}
 				*t = ShapeType(s2)
 			}
-			return modelError("expected string [shape type]", offset)
+			return jsonError("expected string [shape type]", offset)
 		case "traits":
 			err2 := traits.decode(dec2)
 			if err2 != nil {
@@ -50,7 +50,7 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 		default:
 			f, ok := shapeFields[key]
 			if !ok {
-				return modelError("unrecognized shape key: "+strconv.Quote(key), keyOffset)
+				return jsonError("unrecognized shape key: "+strconv.Quote(key), keyOffset)
 			}
 			err2 := f.decodeFunc(dec2, &buf)
 			if err2 != nil {
@@ -68,7 +68,7 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 
 	// Validate that a shape type was received.
 	if t == nil {
-		return modelError("shape is missing type field", offset)
+		return jsonError("shape is missing type field", offset)
 	}
 
 	// Validate that all shape fields decoded are valid members of the
@@ -82,7 +82,7 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 			}
 		}
 		if !found {
-			return modelError("shape of type "+string(*t)+" contains unsupported field "+strconv.Quote(buf.fields[i].name), offset)
+			return jsonError("shape of type "+string(*t)+" contains unsupported field "+strconv.Quote(buf.fields[i].name), offset)
 		}
 	}
 

@@ -34,6 +34,8 @@ func (m *Model) UnmarshalJSON(data []byte) error {
 }
 
 // TODO: These guys should accept a Config that lets you pass in extra trait node type mappings.
+//       Update: Nah, I decided against it as too complicated. People can replace InterfaceNode
+//       with their specific trait node types if they need to.
 func ReadModel(r io.Reader) (m Model, err error) {
 	dec := json.NewDecoder(r)
 	err = m.Decode(dec)

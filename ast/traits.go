@@ -3,12 +3,13 @@ package ast
 import (
 	"bytes"
 	"encoding/json"
-	"math/big"
 	"reflect"
 )
 
 const (
-	UnitTraitID AbsShapeID = "Smithy.api#unitShape"
+	TraitTraitID       AbsShapeID = "smithy.api#trait"
+	SuppressionTraitID AbsShapeID = "smithy.api#suppression"
+	UnitTraitID        AbsShapeID = "smithy.api#unitShape"
 
 	EnumTraitID        AbsShapeID = "smithy.api#enum"
 	IDRefTraitID       AbsShapeID = "smithy.api#idRef"
@@ -84,7 +85,7 @@ const (
 	HostLabelTraitID AbsShapeID = "smithy.api#hostLabel"
 )
 
-type Traits map[AbsShapeID]interface{}
+type Traits map[AbsShapeID]Node
 
 func (t *Traits) UnmarshalJSON(data []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
@@ -95,17 +96,21 @@ func (t *Traits) decode(dec *json.Decoder) error {
 	t2 := make(Traits)
 	err := decodeObject(dec, "traits map", func(dec2 *json.Decoder, key string, keyOffset int64) error {
 		// Determine the type of the value to decode.
-		var val interface{}
+		var v reflect.Value
 		if tp, ok := builtinTraits[AbsShapeID(key)]; ok {
-			val = reflect.New(tp)
+			v = reflect.New(tp)
+		} else {
+			v = reflect.New(reflect.TypeOf(InterfaceNode{}))
+
 		}
 
 		// Decode the value.
-		err2 := dec.Decode(&val)
+		n := v.Interface().(Node)
+		err2 := dec.Decode(v)
 		if err2 != nil {
 			return err2
 		}
-		t2[AbsShapeID(key)] = val
+		t2[AbsShapeID(key)] = n
 		return nil
 	})
 	if err != nil {
@@ -116,126 +121,192 @@ func (t *Traits) decode(dec *json.Decoder) error {
 }
 
 type AnnotationTrait struct {
+	node
 }
 
-type EnumTrait []EnumTraitItem
+func (n *AnnotationTrait) Decode(dec *json.Decoder) error {
+	offset := dec.InputOffset()
+	return decodeObject(dec, "annotation trait", func(_ *json.Decoder, _ string, _ int64) error {
+		return jsonError("annotation trait must be an empty object", offset)
+	})
+}
+
+func (n *AnnotationTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
+}
+
+// TODO: document - https://awslabs.github.io/smithy/1.0/spec/core/model.html#traits
+type TraitTrait struct {
+	node
+	Selector              StringNode   `json:"selector"`
+	Conflicts             []StringNode `json:"conflicts"`
+	StructurallyExclusive StringNode   `json:"structurallyExclusive"`
+}
+
+func (n *TraitTrait) Decode(dec *json.Decoder) error {
+	return decodeToStructPtr(dec, "trait trait", n)
+}
+
+func (n *TraitTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
+}
+
+type SuppressionTrait struct {
+	node
+	Items []StringNode
+}
+
+func (n *SuppressionTrait) Decode(dec *json.Decoder) error {
+	return decodeToSlicePtr(dec, "suppression trait", &n.Items)
+}
+
+func (n *SuppressionTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
+}
+
+func (n *SuppressionTrait) MarshalJSON() ([]byte, error) {
+	return json.Marshal(n.Items)
+}
 
 type EnumTraitItem struct {
-	Value         string
-	Name          string
-	Documentation string
-	Tags          []string
-	Deprecated    bool
+	node
+	Value         StringNode   `json:"value"`
+	Name          StringNode   `json:"name"`
+	Documentation StringNode   `json:"documentation"`
+	Tags          []StringNode `json:"tags"`
+	Deprecated    BoolNode     `json:"deprecated"`
+}
+
+func (n *EnumTraitItem) Decode(dec *json.Decoder) error {
+	return decodeToStructPtr(dec, "enum trait item", n)
+}
+
+func (n *EnumTraitItem) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
+}
+
+type EnumTrait struct {
+	node
+	Items []EnumTraitItem
+}
+
+func (n *EnumTrait) Decode(dec *json.Decoder) error {
+	return decodeToSlicePtr(dec, "enum trait", &n.Items)
+}
+
+func (n *EnumTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
+}
+
+func (n *EnumTrait) MarshalJSON() ([]byte, error) {
+	return json.Marshal(n.Items)
 }
 
 type IDRefTrait struct {
-	FailWhenMissing bool
-	Selector        string
-	ErrorMessage    string
+	node
+	FailWhenMissing BoolNode
+	Selector        StringNode
+	ErrorMessage    StringNode
 }
 
 type LengthTrait struct {
-	Min int64
-	Max int64
+	node
+	Min Int64Node
+	Max Int64Node
 }
 
 type RangeTrait struct {
-	Min big.Rat
-	Max big.Rat
+	node
+	Min BigFloatNode
+	Max BigFloatNode
 }
 
 type DeprecatedTrait struct {
-	Message string
-	Since   string
+	node
+	Message StringNode
+	Since   StringNode
 }
 
-type ExamplesTrait []ExamplesTraitItem
+type ExamplesTrait struct {
+	node
+	Items []ExamplesTraitItem
+}
 
 type ExamplesTraitItem struct {
-	Title         string
-	Documentation string
-	Input         map[string]interface{}
-	Output        map[string]interface{}
+	Title         StringNode
+	Documentation StringNode
+	Input         map[string]InterfaceNode
+	Output        map[string]InterfaceNode
 	Error         *ExamplesTraitError
 }
 
 type ExamplesTraitError struct {
-	ShapeID AbsShapeID
-	Content map[string]interface{}
+	ShapeID AbsShapeIDNode
+	Content map[string]InterfaceNode
 }
 
 type RecommendedTrait struct {
-	Reason string
-}
-
-type ErrorTrait string
-
-func (e *ErrorTrait) UnmarshalJSON(data []byte) error {
-	// Get a decoder on the data.
-	dec := json.NewDecoder(bytes.NewReader(data))
-
-	tok, _ := dec.Token()
-	var s string
-	var ok bool
-	if s, ok = tok.(string); !ok {
-		return newError("expected string value for trait " + string(ErrorTraitID))
-	}
-
-	switch s {
-	case "client", "server":
-		return nil
-	default:
-		return newErrorf("expected value for trait %s to be %q or %q (it is %q)", ErrorTraitID, "client", "server", s)
-	}
+	node
+	Reason StringNode
 }
 
 type ProtocolDefinitionTrait struct {
-	Traits                  []AbsShapeID `json:"traits"`
-	NoInlineDocumentSupport bool         `json:"noInlineDocumentSupport"`
+	node
+	Traits                  []AbsShapeIDNode `json:"traits"`
+	NoInlineDocumentSupport BoolNode         `json:"noInlineDocumentSupport"`
 }
 
 type AuthDefinitionTrait struct {
-	Traits []AbsShapeID `json:"traits"`
+	node
+	Traits []AbsShapeIDNode `json:"traits"`
 }
 
 type PaginatedTrait struct {
-	InputToken  string `json:"inputToken"`
-	OutputToken string `json:"outputToken"`
-	Items       string `json:"items"`
-	PageSize    string `json:"pageSize"`
+	node
+	InputToken  StringNode `json:"inputToken"`
+	OutputToken StringNode `json:"outputToken"`
+	Items       StringNode `json:"items"`
+	PageSize    StringNode `json:"pageSize"`
 }
 
 type ReferencesTrait struct {
-	Service  AbsShapeID        `json:"service"`
-	Resource AbsShapeID        `json:"resource"`
-	IDs      map[string]string `json:"ids"`
-	Rel      string            `json:"rel"`
+	node
+	Service  AbsShapeIDNode        `json:"service"`
+	Resource AbsShapeIDNode        `json:"resource"`
+	IDs      map[string]StringNode `json:"ids"`
+	Rel      StringNode            `json:"rel"`
 }
 
 type HTTPTrait struct {
-	Method string `json:"method"`
-	URI    string `json:"uri"`
-	Code   uint16 `json:"code"`
+	node
+	Method StringNode `json:"method"`
+	URI    StringNode `json:"uri"`
+	Code   Int32Node  `json:"code"` // TODO: Nodify and check node types in Smithy, it is integer so int32 https://awslabs.github.io/smithy/1.0/spec/core/model.html#trait-node-values
 }
 
 type CORSTrait struct {
-	Origin                   string   `json:"origin"`
-	MaxAge                   int32    `json:"maxAge"`
-	AdditionalAllowedHeaders []string `json:"additionalAllowedHeaders"`
-	AdditionalExposedHeaders []string `json:"additionalExposedHeaders"`
+	node
+	Origin                   StringNode   `json:"origin"`
+	MaxAge                   Int32Node    `json:"maxAge"` // TODO: nodify
+	AdditionalAllowedHeaders []StringNode `json:"additionalAllowedHeaders"`
+	AdditionalExposedHeaders []StringNode `json:"additionalExposedHeaders"`
 }
 
 type XMLNamespaceTrait struct {
-	URI    string `json:"uri"`
-	Prefix string `json:"prefix"`
+	node
+	URI    StringNode `json:"uri"`
+	Prefix StringNode `json:"prefix"`
 }
 
 type EndpointTrait struct {
-	HostPrefix string `json:"hostPrefix"`
+	node
+	HostPrefix StringNode `json:"hostPrefix"`
 }
 
 var builtinTraits = map[AbsShapeID]reflect.Type{
-	Unit
+	TraitTraitID:       nil,
+	UnitTraitID:        nil,
+	SuppressionTraitID: nil,
 
 	EnumTraitID:        reflect.TypeOf(EnumTrait{}),
 	IDRefTraitID:       reflect.TypeOf(IDRefTrait{}),

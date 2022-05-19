@@ -52,7 +52,7 @@ func (n *AbsShapeIDNode) Decode(dec *json.Decoder) error {
 		n.Value = AbsShapeID(s)
 		return nil
 	}
-	return modelError("expected string [absolute shape ID]", offset)
+	return jsonError("expected string [absolute shape ID]", offset)
 }
 
 func (n *AbsShapeIDNode) MarshalJSON() ([]byte, error) {
@@ -88,7 +88,7 @@ func decodeAbsShapeIDSliceTo(dec *json.Decoder, name string, dst *[]AbsShapeIDNo
 			ids = append(ids, id)
 			return nil
 		}
-		if modelErr, ok := err2.(*ModelError); ok {
+		if modelErr, ok := err2.(*JSONError); ok {
 			modelErr.msg += " in " + name + " [index " + strconv.Itoa(index) + "]"
 		}
 		return err2
