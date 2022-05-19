@@ -36,6 +36,18 @@ func TestModel(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "version and shapes",
+			json: `{"version":"1.1","shapes":{"foo#Bar":{"type":"string"}}}`,
+			model: Model{
+				Version: StringNode{Value: "1.1"},
+				Shapes: map[AbsShapeID]Shape{
+					"foo#Bar": {
+						Type: StringType,
+					},
+				},
+			},
+		},
 	}
 
 	validateRead := func(t *testing.T, expectedErr, err error, expectedModel, model Model) {

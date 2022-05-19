@@ -39,7 +39,9 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 				if !ShapeTypes[ShapeType(s2)] {
 					return jsonError("unrecognized shape type: "+strconv.Quote(s2), offset)
 				}
-				*t = ShapeType(s2)
+				x := ShapeType(s2)
+				t = &x
+				return nil
 			}
 			return jsonError("expected string [shape type]", offset)
 		case "traits":
@@ -86,6 +88,12 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 		}
 	}
 
+	// Initialize the shape.
+	*s = Shape{
+		Type:   *t,
+		Traits: traits,
+	}
+
 	// Store the shape fields from the buffer onto the final shape.
 	for i := range buf.fields {
 		buf.fields[i].storeFunc(*t, &buf, s)
@@ -95,7 +103,7 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 	return nil
 }
 
-func (s *Shape) MarshalJSON() ([]byte, error) {
+func (s Shape) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 
 	_, _ = buf.WriteString(`{"type":`)
@@ -137,6 +145,8 @@ func (s *Shape) MarshalJSON() ([]byte, error) {
 		p, _ = json.Marshal(s.Operation)  // Marshals as a JSON object
 		_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
 	}
+
+	_ = buf.WriteByte('}')
 
 	return buf.Bytes(), nil
 }

@@ -85,7 +85,7 @@ func decodeToMap(dec *json.Decoder, name string, target interface{}) error {
 		if err != nil {
 			return err
 		}
-		v.SetMapIndex(reflect.ValueOf(key), vv.Elem())
+		v.SetMapIndex(reflect.ValueOf(key).Convert(kt), vv.Elem())
 		return nil
 	})
 }
