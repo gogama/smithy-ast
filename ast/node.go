@@ -55,7 +55,7 @@ func (n *InterfaceNode) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *InterfaceNode) MarshalJSON() ([]byte, error) {
+func (n InterfaceNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Value)
 }
 
@@ -81,7 +81,7 @@ func (n *StringNode) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *StringNode) MarshalJSON() ([]byte, error) {
+func (n StringNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Value)
 }
 
@@ -107,7 +107,7 @@ func (n *BoolNode) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *BoolNode) MarshalJSON() ([]byte, error) {
+func (n BoolNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Value)
 }
 
@@ -131,7 +131,7 @@ func (n *Int32Node) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *Int32Node) MarshalJSON() ([]byte, error) {
+func (n Int32Node) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Value)
 }
 
@@ -155,7 +155,7 @@ func (n *Int64Node) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *Int64Node) MarshalJSON() ([]byte, error) {
+func (n Int64Node) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Value)
 }
 
@@ -174,6 +174,6 @@ func (n *BigFloatNode) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *BigFloatNode) MarshalJSON() ([]byte, error) {
+func (n BigFloatNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Value)
 }

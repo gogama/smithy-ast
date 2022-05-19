@@ -62,29 +62,30 @@ func decodeObject(dec *json.Decoder, name string, valDec valueDecoder) error {
 }
 
 // decodeToMap decodes a JSON object into a map. The map key type must
-// be a kind of string, and the value type must be a kind of Node. The
-// map must be non-nil.
+// be a kind of string, and the value type must be type whose pointer
+// type implements Node. The map must be non-nil.
 func decodeToMap(dec *json.Decoder, name string, target interface{}) error {
 	v := reflect.ValueOf(target)
 	t := v.Type()
 	kt := t.Key()
+	if kt.Kind() != reflect.String {
+		panic(newErrorf("map key type must be a kind of string within %s map but %s is not", name, kt.Name()))
+	}
 	vt := t.Elem()
 	var n Node
-	nt := reflect.TypeOf(&n)
-	if !vt.Implements(nt) {
-		panic(newErrorf("map value type must implement Node for %s but %s does not", name, vt.Name()))
+	nt := reflect.TypeOf(&n).Elem()
+	if !reflect.PtrTo(vt).Implements(nt) {
+		panic(newErrorf("map value type must implement Node within %s map but %s does not", name, vt.Name()))
 	}
 
 	return decodeObject(dec, name, func(dec2 *json.Decoder, key string, _ int64) error {
-		kv := reflect.Zero(kt)
-		kv.Set(reflect.ValueOf(key))
-		vv := reflect.Zero(vt)
+		vv := reflect.New(vt)
 		n2 := vv.Interface().(Node)
 		err := n2.Decode(dec2)
 		if err != nil {
 			return err
 		}
-		v.SetMapIndex(reflect.ValueOf(key), vv)
+		v.SetMapIndex(reflect.ValueOf(key), vv.Elem())
 		return nil
 	})
 }

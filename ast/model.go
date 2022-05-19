@@ -7,15 +7,19 @@ import (
 
 type Model struct {
 	node
-	Version  *StringNode              `json:"version,omitempty"`
+	Version  StringNode               `json:"version"`
 	Metadata map[string]InterfaceNode `json:"metadata,omitempty"`
 	Shapes   map[AbsShapeID]Shape     `json:"shapes,omitempty"`
 }
 
 func (m *Model) Decode(dec *json.Decoder) error {
-	return decodeObject(dec, "model", func(dec2 *json.Decoder, key string, keyOffset int64) error {
+	offset := dec.InputOffset()
+	version := false
+
+	err := decodeObject(dec, "model", func(dec2 *json.Decoder, key string, keyOffset int64) error {
 		switch key {
 		case "version":
+			version = true
 			return m.Version.Decode(dec2)
 		case "metadata":
 			m.Metadata = make(map[string]InterfaceNode)
@@ -27,6 +31,16 @@ func (m *Model) Decode(dec *json.Decoder) error {
 			return unsupportedKeyError("model", key, keyOffset)
 		}
 	})
+
+	if err != nil {
+		return err
+	}
+
+	if !version {
+		return jsonError("missing version", offset)
+	}
+
+	return nil
 }
 
 func (m *Model) UnmarshalJSON(data []byte) error {
@@ -44,7 +58,7 @@ func ReadModel(r io.Reader) (m Model, err error) {
 
 func WriteModel(m Model, w io.Writer) error {
 	enc := json.NewEncoder(w)
-	return enc.Encode(m)
+	return enc.Encode(&m)
 }
 
 func MergeModels(m ...Model) (Model, error) {

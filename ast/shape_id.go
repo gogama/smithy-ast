@@ -55,7 +55,7 @@ func (n *AbsShapeIDNode) Decode(dec *json.Decoder) error {
 	return jsonError("expected string [absolute shape ID]", offset)
 }
 
-func (n *AbsShapeIDNode) MarshalJSON() ([]byte, error) {
+func (n AbsShapeIDNode) MarshalJSON() ([]byte, error) {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
 	err := enc.Encode(n.Value)

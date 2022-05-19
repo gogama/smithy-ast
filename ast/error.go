@@ -19,6 +19,14 @@ func jsonError(msg string, offset int64) error {
 
 func (err *JSONError) Error() string { return err.msg }
 
+func (err *JSONError) Is(other error) bool {
+	if x, ok := other.(*JSONError); ok {
+		return *err == *x
+	}
+
+	return false
+}
+
 func unsupportedKeyError(name, key string, offset int64) error {
 	return jsonError("unsupported key "+strconv.Quote(key)+" in "+name, offset)
 }

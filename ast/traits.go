@@ -164,7 +164,7 @@ func (n *SuppressionTrait) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *SuppressionTrait) MarshalJSON() ([]byte, error) {
+func (n SuppressionTrait) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Items)
 }
 
@@ -198,7 +198,7 @@ func (n *EnumTrait) UnmarshalJSON(data []byte) error {
 	return unmarshalJSON(data, n)
 }
 
-func (n *EnumTrait) MarshalJSON() ([]byte, error) {
+func (n EnumTrait) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Items)
 }
 

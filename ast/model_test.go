@@ -17,8 +17,24 @@ func TestModel(t *testing.T) {
 		err   error
 	}{
 		{
-			name: "empty",
+			name: "missing version",
 			json: `{}`,
+			err:  jsonError("missing version", 0),
+		},
+		{
+			name:  "only version",
+			json:  `{"version":"foo"}`,
+			model: Model{Version: StringNode{Value: "foo"}},
+		},
+		{
+			name: "version and metadata",
+			json: `{"version":"1.0","metadata":{"foo":["bar",{"baz":"qux"}]}}`,
+			model: Model{
+				Version: StringNode{Value: "1.0"},
+				Metadata: map[string]InterfaceNode{
+					"foo": {Value: []interface{}{"bar", map[string]interface{}{"baz": "qux"}}},
+				},
+			},
 		},
 	}
 
@@ -27,8 +43,8 @@ func TestModel(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, expectedModel, model)
 		} else {
-			assert.ErrorIs(t, err, expectedErr)
 			assert.EqualError(t, err, expectedErr.Error())
+			assert.ErrorIs(t, err, expectedErr)
 		}
 	}
 
@@ -61,6 +77,10 @@ func TestModel(t *testing.T) {
 			})
 
 			t.Run("WriteModel", func(t *testing.T) {
+				if testCase.err != nil {
+					t.Skip()
+				}
+
 				w := bytes.Buffer{}
 
 				err := WriteModel(testCase.model, &w)
