@@ -45,7 +45,7 @@ func decodeObject(dec *json.Decoder, name string, valDec valueDecoder) error {
 		}
 
 		// Decode the value.
-		err := valDec(dec, key, dec.InputOffset())
+		err := valDec(dec, key, offset)
 		if err != nil {
 			return err
 		}
@@ -111,10 +111,15 @@ func decodeToStructPtr(dec *json.Decoder, name string, target interface{}) error
 	}
 
 	m := t.NumField()
-	fields := make(map[string]reflect.StructField, m)
+	fields := make(map[string]int, m)
 	for i := 0; i < m; i++ {
 		f := t.Field(i)
+		if !f.IsExported() {
+			continue
+		}
 		key := f.Tag.Get("json")
+		// TODO: Maybe need to support a "required" JSON property?
+		// TODO: Should we have our own serializer and support omitnil? to differentiate empty slice from not present?
 		x := strings.IndexByte(key, ',')
 		if x >= 0 {
 			key = key[0:x]
@@ -125,21 +130,22 @@ func decodeToStructPtr(dec *json.Decoder, name string, target interface{}) error
 		if _, ok := fields[key]; ok {
 			panic(newErrorf("field %s [%i] in struct %s duplicates JSON key %q", f.Name, i, t.Name(), key))
 		}
-		fields[key] = f
+		fields[key] = i
 	}
 
 	var n Node
-	nt := reflect.TypeOf(&n)
+	nt := reflect.TypeOf(&n).Elem()
 
 	return decodeObject(dec, name, func(dec2 *json.Decoder, key string, keyOffset int64) error {
-		f, ok := fields[key]
+		i, ok := fields[key]
 		if !ok {
 			return unsupportedKeyError(name, key, keyOffset)
 		}
 
-		fv := v.FieldByIndex(f.Index)
+		fv := v.Field(i)
 		ft := fv.Type()
-		if ft.Implements(nt) {
+		if ft.Kind() == reflect.Pointer && ft.Implements(nt) {
+			fv.Set(reflect.New(ft.Elem()))
 			return fv.Interface().(Node).Decode(dec2)
 		} else if ft.Kind() == reflect.Map {
 			fv.Set(reflect.MakeMap(ft))
@@ -147,7 +153,7 @@ func decodeToStructPtr(dec *json.Decoder, name string, target interface{}) error
 		} else if ft.Kind() == reflect.Slice {
 			return decodeToSlicePtr(dec2, name+`["`+key+`"]`, fv.Addr().Interface())
 		} else {
-			panic(newErrorf("field %s in struct %s has invalid type", f.Name, t.Name()))
+			panic(newErrorf("field %s in struct %s has invalid type", t.Field(i).Name, t.Name()))
 		}
 	})
 }

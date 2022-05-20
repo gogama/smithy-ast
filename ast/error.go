@@ -17,7 +17,9 @@ func jsonError(msg string, offset int64) error {
 	return &JSONError{prefix + msg, offset}
 }
 
-func (err *JSONError) Error() string { return err.msg }
+func (err *JSONError) Error() string {
+	return err.msg + " at offset " + strconv.FormatInt(err.Offset, 10)
+}
 
 func (err *JSONError) Is(other error) bool {
 	if x, ok := other.(*JSONError); ok {

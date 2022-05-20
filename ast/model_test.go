@@ -48,6 +48,43 @@ func TestModel(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "version, metadata, and shapes",
+			json: `{"version":"1.2","metadata":{"number":123,"object":{"array":[]}},"shapes":{"test#List":{"type":"list","traits":{"smithy.api#length":{"max":5}},"member":{"target":"smithy.api#String","traits":{"smithy.api#required":{}}}}}}`,
+			model: Model{
+				Version: StringNode{Value: "1.2"},
+				Metadata: map[string]InterfaceNode{
+					"number": {Value: float64(123)},
+					"object": {Value: map[string]interface{}{"array": []interface{}{}}},
+				},
+				Shapes: map[AbsShapeID]Shape{
+					"test#List": {
+						Type: ListType,
+						Traits: Traits{
+							LengthTraitID: &LengthTrait{
+								Max: &Int64Node{Value: 5},
+							},
+						},
+						Value: &Member{
+							Target: AbsShapeIDNode{Value: "smithy.api#String"},
+							Traits: Traits{
+								RequiredTraitID: &AnnotationTrait{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "error/unsupported key",
+			json: `{"foo":"bar"}`,
+			err:  jsonError(`unsupported key "foo" in model`, 1),
+		},
+		{
+			name: "error/not an object",
+			json: `   true   `,
+			err:  jsonError("expected '{' to start model", 0),
+		},
 	}
 
 	validateRead := func(t *testing.T, expectedErr, err error, expectedModel, model Model) {

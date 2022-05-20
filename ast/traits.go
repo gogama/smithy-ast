@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"reflect"
+	"sort"
 )
 
 const (
@@ -87,11 +88,6 @@ const (
 
 type Traits map[AbsShapeID]Node
 
-func (t *Traits) UnmarshalJSON(data []byte) error {
-	dec := json.NewDecoder(bytes.NewReader(data))
-	return t.decode(dec)
-}
-
 func (t *Traits) decode(dec *json.Decoder) error {
 	t2 := make(Traits)
 	err := decodeObject(dec, "traits map", func(dec2 *json.Decoder, key string, keyOffset int64) error {
@@ -101,12 +97,11 @@ func (t *Traits) decode(dec *json.Decoder) error {
 			v = reflect.New(tp)
 		} else {
 			v = reflect.New(reflect.TypeOf(InterfaceNode{}))
-
 		}
 
 		// Decode the value.
 		n := v.Interface().(Node)
-		err2 := dec.Decode(v)
+		err2 := dec.Decode(n)
 		if err2 != nil {
 			return err2
 		}
@@ -118,6 +113,35 @@ func (t *Traits) decode(dec *json.Decoder) error {
 	}
 	*t = t2
 	return nil
+}
+
+func (t *Traits) UnmarshalJSON(data []byte) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	return t.decode(dec)
+}
+
+func (t Traits) MarshalJSON() ([]byte, error) {
+	keys := make([]string, 0, len(t))
+	for key := range t {
+		keys = append(keys, string(key))
+	}
+	sort.Strings(keys)
+	var b bytes.Buffer
+	b.WriteByte('{')
+	enc := json.NewEncoder(&b)
+	for _, key := range keys {
+		err := enc.Encode(key)
+		if err != nil {
+			return nil, err
+		}
+		b.WriteByte(':')
+		err = enc.Encode(t[AbsShapeID(key)])
+		if err != nil {
+			return nil, err
+		}
+	}
+	b.WriteByte('}')
+	return b.Bytes(), nil
 }
 
 type AnnotationTrait struct {
@@ -138,9 +162,9 @@ func (n *AnnotationTrait) UnmarshalJSON(data []byte) error {
 // TODO: document - https://awslabs.github.io/smithy/1.0/spec/core/model.html#traits
 type TraitTrait struct {
 	node
-	Selector              StringNode   `json:"selector"`
-	Conflicts             []StringNode `json:"conflicts"`
-	StructurallyExclusive StringNode   `json:"structurallyExclusive"`
+	Selector              *StringNode  `json:"selector,omitempty"`
+	Conflicts             []StringNode `json:"conflicts,omitempty"`
+	StructurallyExclusive *StringNode  `json:"structurallyExclusive,omitempty"`
 }
 
 func (n *TraitTrait) Decode(dec *json.Decoder) error {
@@ -171,10 +195,10 @@ func (n SuppressionTrait) MarshalJSON() ([]byte, error) {
 type EnumTraitItem struct {
 	node
 	Value         StringNode   `json:"value"`
-	Name          StringNode   `json:"name"`
-	Documentation StringNode   `json:"documentation"`
-	Tags          []StringNode `json:"tags"`
-	Deprecated    BoolNode     `json:"deprecated"`
+	Name          *StringNode  `json:"name,omitempty"`
+	Documentation *StringNode  `json:"documentation,omitempty"`
+	Tags          []StringNode `json:"tags,omitempty""`
+	Deprecated    *BoolNode    `json:"deprecated,omitempty"`
 }
 
 func (n *EnumTraitItem) Decode(dec *json.Decoder) error {
@@ -204,21 +228,45 @@ func (n EnumTrait) MarshalJSON() ([]byte, error) {
 
 type IDRefTrait struct {
 	node
-	FailWhenMissing BoolNode
-	Selector        StringNode
-	ErrorMessage    StringNode
+	FailWhenMissing BoolNode   `json:"failWhenMissing"`
+	Selector        StringNode `json:"selector"`
+	ErrorMessage    StringNode `json:"errorMessage"`
+}
+
+func (n *IDRefTrait) Decode(dec *json.Decoder) error {
+	return decodeToStructPtr(dec, "idRef trait", n)
+}
+
+func (n *IDRefTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
 }
 
 type LengthTrait struct {
 	node
-	Min Int64Node
-	Max Int64Node
+	Min *Int64Node `json:"min,omitempty"`
+	Max *Int64Node `json:"max,omitempty"`
+}
+
+func (n *LengthTrait) Decode(dec *json.Decoder) error {
+	return decodeToStructPtr(dec, "length trait", n)
+}
+
+func (n *LengthTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
 }
 
 type RangeTrait struct {
 	node
-	Min BigFloatNode
-	Max BigFloatNode
+	Min BigFloatNode `json:"min,omitempty"`
+	Max BigFloatNode `json:"max,omitempty"`
+}
+
+func (n *RangeTrait) Decode(dec *json.Decoder) error {
+	return decodeToStructPtr(dec, "range trait", n)
+}
+
+func (n *RangeTrait) UnmarshalJSON(data []byte) error {
+	return unmarshalJSON(data, n)
 }
 
 type DeprecatedTrait struct {

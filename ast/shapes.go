@@ -218,6 +218,7 @@ var shapeFields = map[string]shapeField{
 			dst.Value = src.value
 		},
 		decodeFunc: func(dec *json.Decoder, dst *shapeBuffer) error {
+			dst.value = &Member{}
 			return dst.value.Decode(dec)
 		},
 	},
@@ -228,6 +229,7 @@ var shapeFields = map[string]shapeField{
 			dst.Key = src.key
 		},
 		decodeFunc: func(dec *json.Decoder, dst *shapeBuffer) error {
+			dst.key = &Member{}
 			return dst.key.Decode(dec)
 		},
 	},
@@ -238,6 +240,7 @@ var shapeFields = map[string]shapeField{
 			dst.Value = src.value
 		},
 		decodeFunc: func(dec *json.Decoder, dst *shapeBuffer) error {
+			dst.value = &Member{}
 			return dst.value.Decode(dec)
 		},
 	},
