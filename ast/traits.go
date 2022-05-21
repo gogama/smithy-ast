@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"reflect"
-	"sort"
 )
 
 const (
@@ -118,30 +117,6 @@ func (t *Traits) decode(dec *json.Decoder) error {
 func (t *Traits) UnmarshalJSON(data []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	return t.decode(dec)
-}
-
-func (t Traits) MarshalJSON() ([]byte, error) {
-	keys := make([]string, 0, len(t))
-	for key := range t {
-		keys = append(keys, string(key))
-	}
-	sort.Strings(keys)
-	var b bytes.Buffer
-	b.WriteByte('{')
-	enc := json.NewEncoder(&b)
-	for _, key := range keys {
-		err := enc.Encode(key)
-		if err != nil {
-			return nil, err
-		}
-		b.WriteByte(':')
-		err = enc.Encode(t[AbsShapeID(key)])
-		if err != nil {
-			return nil, err
-		}
-	}
-	b.WriteByte('}')
-	return b.Bytes(), nil
 }
 
 type AnnotationTrait struct {
