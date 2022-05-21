@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "shapes": {
+    "smithy.api#String": {
+      "type": "string"
+    },
+    "smithy.api#Blob": {
+      "type": "blob"
+    },
+    "smithy.api#BigInteger": {
+      "type": "bigInteger"
+    }
+  }
+}
