@@ -99,6 +99,9 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 		buf.fields[i].storeFunc(*t, &buf, s)
 	}
 
+	// Set default values of any optional fields.
+	s.setDefaults()
+
 	// Shape decoded successfully.
 	return nil
 }
@@ -118,32 +121,46 @@ func (s Shape) MarshalJSON() ([]byte, error) {
 
 	switch s.Type {
 	case ListType, SetType:
-		_, _ = buf.WriteString(`,"member":`)
-		p, _ = json.Marshal(s.Value)
-		_, _ = buf.Write(p)
+		if s.Value != nil {
+			_, _ = buf.WriteString(`,"member":`)
+			p, _ = json.Marshal(s.Value)
+			_, _ = buf.Write(p)
+		}
 	case MapType:
-		_, _ = buf.WriteString(`,"key":`)
-		p, _ = json.Marshal(s.Key)
-		_, _ = buf.Write(p)
-		_, _ = buf.WriteString(`,"value":`)
-		p, _ = json.Marshal(s.Value)
-		_, _ = buf.Write(p)
+		if s.Key != nil {
+			_, _ = buf.WriteString(`,"key":`)
+			p, _ = json.Marshal(s.Key)
+			_, _ = buf.Write(p)
+		}
+		if s.Value != nil {
+			_, _ = buf.WriteString(`,"value":`)
+			p, _ = json.Marshal(s.Value)
+			_, _ = buf.Write(p)
+		}
 	case StructureType, UnionType:
-		_, _ = buf.WriteString(`,"members":`)
-		p, _ = json.Marshal(s.Members)
-		_, _ = buf.Write(p)
+		if s.Members != nil {
+			_, _ = buf.WriteString(`,"members":`)
+			p, _ = json.Marshal(s.Members)
+			_, _ = buf.Write(p)
+		}
 	case ServiceType:
-		_ = buf.WriteByte(',')
-		p, _ = json.Marshal(s.Service)    // Marshals as a JSON object
-		_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
+		if s.Service != nil {
+			_ = buf.WriteByte(',')
+			p, _ = json.Marshal(s.Service)    // Marshals as a JSON object
+			_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
+		}
 	case ResourceType:
-		_ = buf.WriteByte(',')
-		p, _ = json.Marshal(s.Resource)   // Marshals as a JSON object
-		_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
+		if s.Resource != nil {
+			_ = buf.WriteByte(',')
+			p, _ = json.Marshal(s.Resource)   // Marshals as a JSON object
+			_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
+		}
 	case OperationType:
-		_ = buf.WriteByte(',')
-		p, _ = json.Marshal(s.Operation)  // Marshals as a JSON object
-		_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
+		if s.Operation != nil {
+			_ = buf.WriteByte(',')
+			p, _ = json.Marshal(s.Operation)  // Marshals as a JSON object
+			_, _ = buf.Write(p[1 : len(p)-1]) // Remove surrounding braces and just take key/value pairs.
+		}
 	}
 
 	_ = buf.WriteByte('}')
@@ -174,6 +191,15 @@ func (s *Shape) operation() *Operation {
 		s.Operation = &Operation{}
 	}
 	return s.Operation
+}
+
+func (s *Shape) setDefaults() {
+	switch s.Type {
+	case StructureType:
+		if s.Members == nil {
+			s.Members = make(map[string]Member)
+		}
+	}
 }
 
 type Service struct {

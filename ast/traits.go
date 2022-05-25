@@ -9,7 +9,7 @@ import (
 const (
 	TraitTraitID       AbsShapeID = "smithy.api#trait"
 	SuppressionTraitID AbsShapeID = "smithy.api#suppression"
-	UnitTraitID        AbsShapeID = "smithy.api#unitShape"
+	UnitTypeTraitID    AbsShapeID = "smithy.api#unitType"
 
 	EnumTraitID        AbsShapeID = "smithy.api#enum"
 	IDRefTraitID       AbsShapeID = "smithy.api#idRef"
@@ -327,9 +327,9 @@ type EndpointTrait struct {
 }
 
 var builtinTraits = map[AbsShapeID]reflect.Type{
-	TraitTraitID:       nil,
-	UnitTraitID:        nil,
-	SuppressionTraitID: nil,
+	TraitTraitID:       reflect.TypeOf(TraitTrait{}),
+	UnitTypeTraitID:    reflect.TypeOf(AnnotationTrait{}),
+	SuppressionTraitID: reflect.TypeOf(SuppressionTrait{}),
 
 	EnumTraitID:        reflect.TypeOf(EnumTrait{}),
 	IDRefTraitID:       reflect.TypeOf(IDRefTrait{}),

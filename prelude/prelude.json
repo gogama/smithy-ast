@@ -9,6 +9,84 @@
     },
     "smithy.api#BigInteger": {
       "type": "bigInteger"
+    },
+    "smithy.api#BigDecimal": {
+      "type": "bigDecimal"
+    },
+    "smithy.api#Timestamp": {
+      "type": "timestamp"
+    },
+    "smithy.api#Document": {
+      "type": "document"
+    },
+    "smithy.api#Boolean": {
+      "type": "boolean",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveBoolean": {
+      "type": "boolean"
+    },
+    "smithy.api#Byte": {
+      "type": "byte",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveByte": {
+      "type": "byte"
+    },
+    "smithy.api#Short": {
+      "type": "short",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveShort": {
+      "type": "short"
+    },
+    "smithy.api#Integer": {
+      "type": "integer",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveInteger": {
+      "type": "integer"
+    },
+    "smithy.api#Long": {
+      "type": "long",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveLong": {
+      "type": "long"
+    },
+    "smithy.api#Float": {
+      "type": "float",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveFloat": {
+      "type": "float"
+    },
+    "smithy.api#Double": {
+      "type": "double",
+      "traits": {
+        "smithy.api#box": {}
+      }
+    },
+    "smithy.api#PrimitiveDouble": {
+      "type": "double"
+    },
+    "smithy.api#Unit": {
+      "type": "structure",
+      "traits": {
+        "smithy.api#unitType": {}
+      }
     }
   }
 }

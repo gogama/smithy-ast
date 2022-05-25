@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,37 +17,58 @@ import (
 // TestMinifyAndGZIP is both a test AND a crucial part of the build
 // process, since it generates the GZIPped minified prelude model JSON
 // which is embedded in prelude.go.
+//
+// This "test" is separated into a "Pipeline" of sub-steps to ensure
+// that the output of each sub-step is valid input to the next sub-step.
+
 func TestMinifyAndGZIP(t *testing.T) {
-	raw, err := os.Open("prelude.json")
-	require.NoError(t, err)
-	defer func() {
-		_ = raw.Close()
-	}()
+	var m1, m2 ast.Model
 
-	m, err := ast.ReadModel(raw)
-	require.NoError(t, err)
+	t.Run("Minify", func(t *testing.T) {
+		raw, err := os.Open("prelude.json")
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_ = raw.Close()
+		})
 
-	min, err := os.OpenFile("prelude_min.json", os.O_WRONLY|os.O_CREATE, 0644)
-	require.NoError(t, err)
-	defer func() {
-		_ = min.Close()
-	}()
+		m1, err = ast.ReadModel(raw)
+		require.NoError(t, err)
 
-	err = ast.WriteModel(m, min)
-	require.NoError(t, err)
+		min, err := os.OpenFile("prelude_min.json", os.O_WRONLY|os.O_CREATE, 0644)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_ = min.Close()
+		})
 
-	gzf, err := os.OpenFile("prelude_min.json.gz", os.O_WRONLY|os.O_CREATE, 0644)
-	require.NoError(t, err)
-	defer func() {
-		_ = gzf.Close()
-	}()
+		err = ast.WriteModel(m1, min)
+		require.NoError(t, err)
+	})
 
-	gz := gzip.NewWriter(gzf)
-	defer func() {
-		_ = gz.Close()
-	}()
-	err = ast.WriteModel(m, gz)
-	require.NoError(t, err)
+	t.Run("GZIP", func(t *testing.T) {
+		min, err := os.Open("prelude_min.json")
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_ = min.Close()
+		})
+
+		m2, err = ast.ReadModel(min)
+		require.NoError(t, err)
+		require.True(t, reflect.DeepEqual(m1, m2), "m1 and m2 must be deeply equal")
+
+		gzf, err := os.OpenFile("prelude_min.json.gz", os.O_WRONLY|os.O_CREATE, 0644)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_ = gzf.Close()
+		})
+
+		gz := gzip.NewWriter(gzf)
+		t.Cleanup(func() {
+			_ = gz.Close()
+		})
+		err = ast.WriteModel(m2, gz)
+		require.NoError(t, err)
+	})
+
 }
 
 func TestNewReader(t *testing.T) {

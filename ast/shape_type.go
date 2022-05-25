@@ -8,7 +8,7 @@ const (
 	BlobType       ShapeType = "blob"
 	BooleanType    ShapeType = "boolean"
 	ByteType       ShapeType = "byte"
-	DoubleType     ShapeType = "double'"
+	DoubleType     ShapeType = "double"
 	DocumentType   ShapeType = "document"
 	FloatType      ShapeType = "float"
 	IntegerType    ShapeType = "integer"
