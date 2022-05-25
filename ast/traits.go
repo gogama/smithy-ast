@@ -73,7 +73,7 @@ const (
 	HTTPPrefixedHeadersTraitID AbsShapeID = "smithy.api#httpPrefixedHeaders"
 	HTTPQueryTraitID           AbsShapeID = "smithy.api#httpQuery"
 	HTTPQueryParamsTraitID     AbsShapeID = "smithy.api#httpQueryParams"
-	HTTPResponseCodeTraitID    AbsShapeID = "smithy.api#httpResponseCode" + ""
+	HTTPResponseCodeTraitID    AbsShapeID = "smithy.api#httpResponseCode"
 	CORSTraitID                AbsShapeID = "smithy.api#cors"
 
 	XMLAttributeTraitID AbsShapeID = "smithy.api#xmlAttribute"
@@ -172,7 +172,7 @@ type EnumTraitItem struct {
 	Value         StringNode   `json:"value"`
 	Name          *StringNode  `json:"name,omitempty"`
 	Documentation *StringNode  `json:"documentation,omitempty"`
-	Tags          []StringNode `json:"tags,omitempty""`
+	Tags          []StringNode `json:"tags,omitempty"`
 	Deprecated    *BoolNode    `json:"deprecated,omitempty"`
 }
 
@@ -334,22 +334,22 @@ var builtinTraits = map[AbsShapeID]reflect.Type{
 	EnumTraitID:        reflect.TypeOf(EnumTrait{}),
 	IDRefTraitID:       reflect.TypeOf(IDRefTrait{}),
 	LengthTraitID:      reflect.TypeOf(LengthTrait{}),
-	PatternTraitID:     reflect.TypeOf(""),
+	PatternTraitID:     reflect.TypeOf(StringNode{}),
 	PrivateTraitID:     reflect.TypeOf(AnnotationTrait{}),
 	RangeTraitID:       reflect.TypeOf(RangeTrait{}),
 	RequiredTraitID:    reflect.TypeOf(AnnotationTrait{}),
 	UniqueItemsTraitID: reflect.TypeOf(AnnotationTrait{}),
 
 	DeprecatedTraitID:            reflect.TypeOf(DeprecatedTrait{}),
-	DocumentationTraitID:         reflect.TypeOf(""),
+	DocumentationTraitID:         reflect.TypeOf(StringNode{}),
 	ExamplesTraitID:              reflect.TypeOf(ExamplesTrait{}),
 	ExternalDocumentationTraitID: reflect.TypeOf(map[string]string{}),
 	InternalTraitID:              reflect.TypeOf(AnnotationTrait{}),
 	RecommendedTraitID:           reflect.TypeOf(RecommendedTrait{}),
 	SensitiveTraitID:             reflect.TypeOf(AnnotationTrait{}),
-	SinceTraitID:                 reflect.TypeOf(""),
+	SinceTraitID:                 reflect.TypeOf(StringNode{}),
 	TagsTraitID:                  reflect.TypeOf([]string{}),
-	TitleTraitID:                 reflect.TypeOf(""),
+	TitleTraitID:                 reflect.TypeOf(StringNode{}),
 	UnstableTraitID:              reflect.TypeOf(AnnotationTrait{}),
 
 	BoxTraitID:    reflect.TypeOf(AnnotationTrait{}),
@@ -359,9 +359,9 @@ var builtinTraits = map[AbsShapeID]reflect.Type{
 	SparseTraitID: reflect.TypeOf(AnnotationTrait{}),
 
 	ProtocolDefinitionTraitID: reflect.TypeOf(ProtocolDefinitionTrait{}),
-	JSONNameTraitID:           reflect.TypeOf(""),
-	MediaTypeTraitID:          reflect.TypeOf(""),
-	TimestampFormatTraitID:    reflect.TypeOf(""),
+	JSONNameTraitID:           reflect.TypeOf(StringNode{}),
+	MediaTypeTraitID:          reflect.TypeOf(StringNode{}),
+	TimestampFormatTraitID:    reflect.TypeOf(StringNode{}),
 
 	AuthDefinitionTraitID: reflect.TypeOf(AuthDefinitionTrait{}),
 	HTTPBasicAuthTraitID:  reflect.TypeOf(AnnotationTrait{}),
@@ -380,25 +380,25 @@ var builtinTraits = map[AbsShapeID]reflect.Type{
 
 	NoReplaceTraitID:          reflect.TypeOf(AnnotationTrait{}),
 	ReferencesTraitID:         reflect.TypeOf(ReferencesTrait{}),
-	ResourceIdentifierTraitID: reflect.TypeOf(""),
+	ResourceIdentifierTraitID: reflect.TypeOf(StringNode{}),
 
 	StreamingTraitID:      reflect.TypeOf(AnnotationTrait{}),
 	RequiresLengthTraitID: reflect.TypeOf(AnnotationTrait{}),
 
 	HTTPTraitID:                reflect.TypeOf(HTTPTrait{}),
 	HTTPErrorTraitID:           reflect.TypeOf(uint16(0)),
-	HTTPHeaderTraitID:          reflect.TypeOf(""),
+	HTTPHeaderTraitID:          reflect.TypeOf(StringNode{}),
 	HTTPLabelTraitID:           reflect.TypeOf(AnnotationTrait{}),
 	HTTPPayloadTraitID:         reflect.TypeOf(AnnotationTrait{}),
-	HTTPPrefixedHeadersTraitID: reflect.TypeOf(""),
-	HTTPQueryTraitID:           reflect.TypeOf(""),
+	HTTPPrefixedHeadersTraitID: reflect.TypeOf(StringNode{}),
+	HTTPQueryTraitID:           reflect.TypeOf(StringNode{}),
 	HTTPQueryParamsTraitID:     reflect.TypeOf(AnnotationTrait{}),
 	HTTPResponseCodeTraitID:    reflect.TypeOf(AnnotationTrait{}),
 	CORSTraitID:                reflect.TypeOf(CORSTrait{}),
 
 	XMLAttributeTraitID: reflect.TypeOf(AnnotationTrait{}),
 	XMLFlattenedTraitID: reflect.TypeOf(AnnotationTrait{}),
-	XMLNameTraitID:      reflect.TypeOf(""),
+	XMLNameTraitID:      reflect.TypeOf(StringNode{}),
 	XMLNamespaceTraitID: reflect.TypeOf(XMLNamespaceTrait{}),
 
 	EndpointTraitID:  reflect.TypeOf(EndpointTrait{}),
