@@ -2,8 +2,12 @@ package prelude
 
 import (
 	"compress/gzip"
+	"encoding/json"
+	"io"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/gogama/smithy-ast/ast"
 	"github.com/stretchr/testify/require"
@@ -43,4 +47,27 @@ func TestMinifyAndGZIP(t *testing.T) {
 	}()
 	err = ast.WriteModel(m, gz)
 	require.NoError(t, err)
+}
+
+func TestNewReader(t *testing.T) {
+	t.Run("Valid JSON", func(t *testing.T) {
+		r := NewReader()
+		require.NotNil(t, r)
+
+		data, err := io.ReadAll(r)
+		require.NoError(t, err)
+
+		v := json.Valid(data)
+		assert.True(t, v)
+	})
+
+	t.Run("Parseable AST", func(t *testing.T) {
+		r := NewReader()
+		require.NotNil(t, r)
+
+		m, err := ast.ReadModel(r)
+		require.NoError(t, err)
+
+		assert.Equal(t, "1.0", m.Version.Value)
+	})
 }
