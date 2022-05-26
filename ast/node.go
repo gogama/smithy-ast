@@ -22,7 +22,6 @@ type Node interface {
 	Location() Location
 	SetLocation(loc Location)
 	Decode(dec *json.Decoder) error
-	json.Unmarshaler
 }
 
 type node struct {
