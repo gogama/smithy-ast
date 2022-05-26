@@ -39,11 +39,27 @@ func (err *JSONError) Is(other error) bool {
 	return false
 }
 
-type MergeError struct {
-}
-
 func unsupportedKeyError(name, key string, offset int64) error {
 	return jsonError("unsupported key "+strconv.Quote(key)+" in "+name, offset)
+}
+
+type MergeConflictError struct {
+	msg           string
+	First, Second Node
+}
+
+func (err *MergeConflictError) Error() string {
+	return prefix + "merge conflict: " + err.msg
+}
+
+type MergeConflictsError []MergeConflictError
+
+func (err MergeConflictsError) Error() string {
+	if len(err) == 1 {
+		return err[0].Error()
+	}
+
+	return prefix + strconv.Itoa(len(err)) + " merge conflicts"
 }
 
 func newError(text string) error {
