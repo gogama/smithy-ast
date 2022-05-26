@@ -66,7 +66,7 @@ type StringNode struct {
 func (n *StringNode) Decode(dec *json.Decoder) error {
 	offset := dec.InputOffset()
 	t, err := dec.Token()
-	if err != nil {
+	if isNonSyntaxError(err) {
 		return err
 	}
 	if s, ok := t.(string); ok {
@@ -92,7 +92,7 @@ type BoolNode struct {
 func (n *BoolNode) Decode(dec *json.Decoder) error {
 	offset := dec.InputOffset()
 	t, err := dec.Token()
-	if err != nil {
+	if isNonSyntaxError(err) {
 		return err
 	}
 	if b, ok := t.(bool); ok {

@@ -14,12 +14,16 @@ type valueDecoder func(dec *json.Decoder, key string, keyOffset int64) error
 // to decode the value. If the key and value need to be persisted, this
 // is the responsibility of the callback.
 func decodeObject(dec *json.Decoder, name string, valDec valueDecoder) error {
-	var tok json.Token
 	var offset int64
+	var tok json.Token
+	var err error
 
 	// Expect an open brace starting a JSON object.
 	offset = dec.InputOffset()
-	tok, _ = dec.Token()
+	tok, err = dec.Token()
+	if isNonSyntaxError(err) {
+		return err
+	}
 	var delim json.Delim
 	var ok bool
 	if delim, ok = tok.(json.Delim); !ok || delim != '{' {
@@ -33,7 +37,10 @@ func decodeObject(dec *json.Decoder, name string, valDec valueDecoder) error {
 	for dec.More() {
 		// Get the key.
 		offset = dec.InputOffset()
-		tok, _ = dec.Token()
+		tok, err = dec.Token()
+		if isNonSyntaxError(err) {
+			return err
+		}
 		var key string
 		if key, ok = tok.(string); !ok {
 			return jsonError("expected string key within "+name, offset)
@@ -45,14 +52,17 @@ func decodeObject(dec *json.Decoder, name string, valDec valueDecoder) error {
 		}
 
 		// Decode the value.
-		err := valDec(dec, key, offset)
+		err = valDec(dec, key, offset)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Expect a closing brace ending the JSON object.
-	tok, _ = dec.Token()
+	tok, err = dec.Token()
+	if isNonSyntaxError(err) {
+		return err
+	}
 	if delim, ok = tok.(json.Delim); !ok || delim != '}' {
 		return jsonError("expected '}' to end "+name, dec.InputOffset())
 	}
@@ -165,12 +175,16 @@ type elementDecoder func(dec *json.Decoder, index int) error
 // to decode that element. If the decoded element needs to be persisted,
 // this is the responsibility of the callback.
 func decodeArray(dec *json.Decoder, name string, elemDec elementDecoder) error {
-	var tok json.Token
 	var offset int64
+	var err error
+	var tok json.Token
 
 	// Expect an open bracket starting a JSON object.
 	offset = dec.InputOffset()
-	tok, _ = dec.Token()
+	tok, err = dec.Token()
+	if isNonSyntaxError(err) {
+		return err
+	}
 	var delim json.Delim
 	var ok bool
 	if delim, ok = tok.(json.Delim); !ok || delim != '[' {
@@ -186,7 +200,10 @@ func decodeArray(dec *json.Decoder, name string, elemDec elementDecoder) error {
 	}
 
 	// Expect a closing bracket ending the JSON array.
-	tok, _ = dec.Token()
+	tok, err = dec.Token()
+	if isNonSyntaxError(err) {
+		return err
+	}
 	if delim, ok = tok.(json.Delim); !ok || delim != ']' {
 		return jsonError("expected ']' to end "+name, dec.InputOffset())
 	}
@@ -241,7 +258,7 @@ func decodeNumber(dec *json.Decoder, numDec numberDecoder) error {
 	offset := dec.InputOffset()
 	dec.UseNumber()
 	t, err := dec.Token()
-	if err != nil {
+	if isNonSyntaxError(err) {
 		return err
 	}
 	var n json.Number

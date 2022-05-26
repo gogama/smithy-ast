@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -11,6 +12,15 @@ import (
 type JSONError struct {
 	msg    string // description of error
 	Offset int64  // error occurred after reading Offset bytes
+}
+
+func isNonSyntaxError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	_, ok := err.(*json.SyntaxError)
+	return ok
 }
 
 func jsonError(msg string, offset int64) error {
@@ -27,6 +37,9 @@ func (err *JSONError) Is(other error) bool {
 	}
 
 	return false
+}
+
+type MergeError struct {
 }
 
 func unsupportedKeyError(name, key string, offset int64) error {

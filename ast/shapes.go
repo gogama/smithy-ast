@@ -32,7 +32,7 @@ func (s *Shape) Decode(dec *json.Decoder) error {
 		switch key {
 		case "type":
 			tok, err2 := dec2.Token()
-			if err2 != nil {
+			if isNonSyntaxError(err2) {
 				return err2
 			}
 			if s2, ok := tok.(string); ok {

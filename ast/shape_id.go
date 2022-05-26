@@ -45,7 +45,7 @@ type AbsShapeIDNode struct {
 func (n *AbsShapeIDNode) Decode(dec *json.Decoder) error {
 	offset := dec.InputOffset()
 	t, err := dec.Token()
-	if err != nil {
+	if isNonSyntaxError(err) {
 		return err
 	}
 	if s, ok := t.(string); ok {
